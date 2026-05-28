@@ -1,0 +1,75 @@
+# Architecture Decisions & Explanations
+
+This document tracks technical decisions, explanations of core technologies, and architectural changes for the Windows ARM64 port of OpenHPSDR-Thetis.
+
+---
+
+## 1. Fast Fourier Transform Library (FFTW3)
+
+### What is FFTW3?
+**FFTW (Fastest Fourier Transform in the West)** is a highly optimized C library for computing discrete Fourier transforms (DFTs). In the context of SDR (Software Defined Radio) applications like Thetis, FFT is the mathematical operation that converts raw radio samples in the time domain (I/Q data received from hardware like the Hermes-Lite 2) into the frequency domain. 
+
+This conversion is required for:
+1. **Panadapter / Waterfall Display**: Rendering the visual representation of radio signals across a frequency span.
+2. **Filtering & Demodulation**: Many DSP filters (like bandpass filters, noise blankers, and spectral subtraction noise reduction) are implemented in the frequency domain because it is computationally faster and mathematically cleaner to multiply frequencies rather than convolving long time-domain filters.
+
+### Decision: Native ARM64 Compilation via vcpkg
+- **Problem**: The original repository comes with precompiled x64 and x86 binaries of FFTW3. To run natively on ARM64, we need native `libfftw3-3.dll` (double precision), `libfftw3f-3.dll` (single precision float), and `libfftw3l-3.dll` (long double precision) binaries.
+- **Solution**: We will compile FFTW3 using the host's `vcpkg` package manager with the `arm64-windows` triplet. This ensures the library is built with optimization flags matching the host compiler (`cl.exe`) for ARM64.
+- **Status**: Pending execution of compilation step.
+
+---
+
+## 2. Target Framework Upgrade (.NET Framework 4.8.1)
+
+### Why is this upgrade required?
+Thetis's GUI is a C# WinForms application targeting `.NET Framework 4.8`.
+- While Windows on ARM can run `.NET Framework 4.8` applications using x86/x64 emulation, running under emulation forces the process to load x86 or x64 native DLLs.
+- Since we want native ARM64 performance for the math-heavy DSP backend (`wdsp.dll`), the C# application must run as a native ARM64 process.
+- **.NET Framework 4.8.1** is the first version of .NET Framework to introduce **native ARM64 support** for Windows Forms and WPF applications.
+- By upgrading our target framework to `v4.8.1` and compiling the C# projects for `ARM64` (or `AnyCPU` running on an ARM64 system), the CLR will execute the application natively, allowing it to load our native ARM64 DSP DLLs directly.
+
+### Decision: Upgrade C# targets to 4.8.1
+- **Status**: Approved by User. Target framework version tags in C# project files will be updated in the next phase.
+
+---
+
+## 3. Noise Reduction (rnnoise & specbleach)
+
+### What are these libraries?
+- **rnnoise**: A recurrent neural network-based noise suppression library developed by the Xiph.Org Foundation. It combines classic DSP spectral subtraction with a deep learning recurrent neural network (GRU) to filter out background noise from speech.
+- **specbleach**: A spectral subtraction denoiser designed specifically for cleanup of background noise in voice communications.
+
+### Decision: Compile from source using CMake
+- The project repository includes the full source code for both libraries in `Project Files/lib/NR_Algorithms_x64/src`.
+- We will configure CMake to generate Visual Studio project files targeting ARM64 and build them using MSVC's ARM64 compilers.
+- **Status**: Pending execution.
+
+---
+
+## 4. Fortran Dependencies Audit
+
+### Current Status
+- An initial recursive search of the workspace for Fortran files (`*.f`, `*.f90`, `*.for`, etc.) indicates that there are **no active Fortran source files** compiled by the projects in this solution.
+- The only Fortran-related files are interface/binding headers (`fftw3.f`, `fftw3.f03`, etc.) distributed as part of the third-party FFTW3 library. The active projects (`wdsp`, `ChannelMaster`, `cmASIO`, `portaudio`, `Thetis` C# frontend) are written entirely in C, C++, and C#.
+
+### Decision: Risk Mitigation and Ongoing Research
+- If any legacy Fortran routines are discovered during deep compilation audits of `wdsp` or other modules, we will:
+  1. Identify their mathematical purpose.
+  2. Research compilation options (e.g., MinGW/GFortran cross-compilers or Intel oneAPI Fortran).
+  3. Discuss and draft a porting plan to translate them to C/C++ or replace them with modern equivalent C/C++ libraries before making any changes.
+
+---
+
+## 5. Device Connectivity & USB Drivers
+
+### Context
+- The target hardware for this port is the **Hermes-Lite 2 (HL2)** SDR transceiver.
+- The HL2 connects to the host PC strictly via **Ethernet (UDP/IP)** rather than USB.
+
+### Decision: Bypassing USB Driver Porting
+- Since the HL2 does not use USB for connection, any USB-specific driver DLLs (such as `FTDI2XX.dll` or similar FTDI drivers) are **not required** to be ported natively to ARM64.
+- If the application references FTDI packages (e.g. NuGet packages in the C# project), we can leave them as AnyCPU/x86/x64 assemblies. As long as the runtime execution path for HL2 does not call or initialize the native FTDI drivers, the application will run fine without native ARM64 FTDI DLLs.
+- This reduces porting complexity and risk, allowing us to focus entirely on the core DSP libraries (`wdsp`) and the network sockets/audio interfaces.
+
+

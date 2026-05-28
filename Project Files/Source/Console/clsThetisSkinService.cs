@@ -1,4 +1,4 @@
-﻿/*  clsThetisSkinService.cs
+/*  clsThetisSkinService.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -43,7 +43,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Cache;
 using System.Drawing;
 using System.IO;
 using Newtonsoft.Json;
@@ -139,21 +138,17 @@ namespace Thetis
         }
         public static async void GetThetisSkinsData(string jsonUrl)
         {
-            HttpRequestCachePolicy cp = null;
-            WebRequestHandler wrh = null;
+            HttpClientHandler handler = null;
             HttpClient client = null;
 
             try
             {
-                cp = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
-
-                wrh = new WebRequestHandler()
+                handler = new HttpClientHandler()
                 {
-                    CachePolicy = cp,
                     UseCookies = false
                 };
 
-                client = new HttpClient(wrh);
+                client = new HttpClient(handler);
                 client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
 
                 // Send a GET request to the JSON URL and read the content asynchronously.
@@ -170,10 +165,8 @@ namespace Thetis
                 client.Dispose();
                 client = null;
 
-                wrh.Dispose();
-                wrh = null;
-
-                cp = null;
+                handler.Dispose();
+                handler = null;
             }
             catch (Exception)
             {
@@ -188,32 +181,26 @@ namespace Thetis
                     client = null;
                 }
 
-                if (wrh != null)
+                if (handler != null)
                 {
-                    wrh.Dispose();
-                    wrh = null;
+                    handler.Dispose();
+                    handler = null;
                 }
-
-                cp = null;
             }
         }
         public static async void GetSkinServers(string jsonUrl)
         {
-            HttpRequestCachePolicy cp = null;
-            WebRequestHandler wrh = null;
+            HttpClientHandler handler = null;
             HttpClient client = null;
 
             try
             {
-                cp = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
-
-                wrh = new WebRequestHandler()
+                handler = new HttpClientHandler()
                 {
-                    CachePolicy = cp,
                     UseCookies = false
                 };
 
-                client = new HttpClient(wrh);
+                client = new HttpClient(handler);
                 client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue(){ NoCache = true };
                 client.Timeout = TimeSpan.FromSeconds(10); // 10 seconds
 
@@ -234,13 +221,11 @@ namespace Thetis
                     client = null;
                 }
 
-                if (wrh != null)
+                if (handler != null)
                 {
-                    wrh.Dispose();
-                    wrh = null;
+                    handler.Dispose();
+                    handler = null;
                 }
-
-                cp = null;
             }
         }
 
@@ -282,21 +267,17 @@ namespace Thetis
         }
         public static async void LoadImageFromUrl(string imageUrl, string sID)
         {
-            HttpRequestCachePolicy cp = null;
-            WebRequestHandler wrh = null;
+            HttpClientHandler handler = null;
             HttpClient client = null;
 
             try
             {
-                cp = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
-
-                wrh = new WebRequestHandler()
+                handler = new HttpClientHandler()
                 {
-                    CachePolicy = cp,
                     UseCookies = false
                 };
 
-                client = new HttpClient(wrh);
+                client = new HttpClient(handler);
                 client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue() { NoCache = true };
 
                 byte[] imageBytes = await client.GetByteArrayAsync(imageUrl);
@@ -324,13 +305,11 @@ namespace Thetis
                     client = null;
                 }
 
-                if (wrh != null)
+                if (handler != null)
                 {
-                    wrh.Dispose();
-                    wrh = null;
+                    handler.Dispose();
+                    handler = null;
                 }
-
-                cp = null;
             }
         }
 

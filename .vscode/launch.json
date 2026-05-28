@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console - win-arm64)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-arm64",
+            "program": "${workspaceFolder}/Project Files/Source/Console/bin/Debug/net8.0-windows/win-arm64/Thetis.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/Project Files/Source/Console/bin/Debug/net8.0-windows/win-arm64",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}

@@ -41,12 +41,12 @@ target_include_directories(specbleach
 
 # 9) Locate exactly the import-lib for FFTW3f
 find_library(FFTW3F_LIB
-  NAMES libfftw3f-3 fftw3f-3
+  NAMES libfftw3f-3 fftw3f-3 fftw3f
   PATHS "${FFTW3F_ROOT}"
   NO_DEFAULT_PATH
 )
 if(NOT FFTW3F_LIB)
-  message(FATAL_ERROR "Could not find libfftw3f-3.lib in ${FFTW3F_ROOT}")
+  message(FATAL_ERROR "Could not find FFTW3 float library in ${FFTW3F_ROOT}")
 endif()
 
 # 10) Link against it

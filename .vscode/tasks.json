@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-arm64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Project Files/Source/Console/Thetis.csproj",
+                "-r",
+                "win-arm64"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
