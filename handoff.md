@@ -29,40 +29,36 @@ Use this document to resume the porting work on any machine.
 
 ---
 
-## 2. Uncommitted Files on this Machine
-Run `git status` to see:
-- Modified C++ projects and C# `.csproj` files.
-- Untracked directories:
-  - `.vscode/` (Debug launcher configuration)
-  - `Project Files/lib/fftw_arm64/` (Native FFTW3 ARM64 libs)
-  - `Project Files/lib/NR_Algorithms_arm64/` (Native NR ARM64 libs)
+## 2. Dynamic Planning Synchronization
+We have automated the copy of your AI planning state (`task.md` and `implementation_plan.md`) directly into `Thetis.csproj` post-build. 
+- Building the project automatically synchronizes the active planning files to the repository `Documents/` folder.
+- There is **no need** to run custom checkpoint scripts. Just build/compile and commit your repository changes using standard Git or VS Code Source Control (with AI-generated commit messages).
 
 ---
 
 ## 3. How to Resume Work
 
 ### Step A: Push Current Workspace State to Git
-1. Create and checkout a new branch (e.g., `feature/arm64-port`):
+1. Build the project (either in the terminal or by selecting the **`Build & Run Handoff (Release - win-arm64)`** option in VS Code's Run and Debug panel) to make sure the latest planning files are copied:
    ```powershell
-   git checkout -b feature/arm64-port
+   dotnet build "Project Files/Source/Console/Thetis.csproj" -c Release -r win-arm64 --no-self-contained
    ```
-2. Stage and commit all changes, including untracked libraries:
-   ```powershell
-   git add .
-   git commit -m "checkpoint: arm64 compilation successful, ready for pinvoke corrections"
-   ```
-3. Push to your repository:
-   ```powershell
-   git push origin feature/arm64-port
-   ```
+2. Open the **VS Code Source Control panel**, click the Spark icon next to the commit input to **generate an AI commit message**, and commit.
+3. Push the active branch to remote `origin`.
 
 ### Step B: Pull on the New Machine
 1. Clone/pull the branch:
    ```powershell
    git clone <repo-url>
-   git checkout feature/arm64-port
+   git checkout <active-branch>
    ```
 
 ### Step C: Direct the AI Assistant to Resume
-Paste this instruction to start the next session:
-> "We are porting OpenHPSDR-Thetis to Windows ARM64. Refer to `handoff.md` in the repository root for the current progress. We have defined the P/Invoke corrections plan in our previous session. Let's start by implementing the proposed changes in `handoff.md` section 1 under Phase 3 (updating `win32.cs`, `console.cs`, `frmNotchPopup.cs`, `WinMM.cs`, and `MidiDevice.cs` signatures)."
+1. Open the project in your editor and start the new AI assistant session.
+2. In the powershell terminal, run:
+   ```powershell
+   .\resume.ps1
+   ```
+   *This copies the planning files from `Documents/` back into the newly initialized session.*
+3. Start the session with:
+   > "We are porting OpenHPSDR-Thetis to Windows ARM64. Refer to `handoff.md` and `Documents/HANDOFF_PROCEDURES.md` in the repository root for current progress and instructions. We have defined the P/Invoke corrections plan. Read `implementation_plan.md` and `task.md` and begin implementing the proposed changes."

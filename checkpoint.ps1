@@ -47,10 +47,18 @@ $commitMsg = "checkpoint: ARM64 port state as of $timestamp"
 Write-Host "Committing changes..."
 git commit -m $commitMsg
 
-Write-Host "Current branch:"
-git branch --show-current
+# Dynamically fetch current branch name to push to remote
+$currentBranch = (git branch --show-current).Trim()
+Write-Host "Current active branch: $currentBranch"
 
-Write-Host "Pushing to remote..."
-git push
+Write-Host "Pushing to remote origin..."
+git push -u origin $currentBranch
 
-Write-Host "Checkpoint complete! You can safely switch machines or take a break."
+Write-Host "`n" -NoNewline
+Write-Host "==========================================================" -ForegroundColor Green
+Write-Host "Checkpoint complete! You can safely switch machines." -ForegroundColor Green
+Write-Host "To resume on the new machine, run these commands:" -ForegroundColor Green
+Write-Host "  git checkout $currentBranch" -ForegroundColor Yellow
+Write-Host "  git pull origin $currentBranch" -ForegroundColor Yellow
+Write-Host "  .\resume.ps1" -ForegroundColor Yellow
+Write-Host "==========================================================" -ForegroundColor Green

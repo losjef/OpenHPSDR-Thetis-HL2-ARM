@@ -99,4 +99,9 @@
     <Copy SourceFiles="@(NativeDLLs)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(NativeResources)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
+
+  <!-- Sync planning artifacts from Antigravity AppData brain folder to repository Documents/ folder -->
+  <Target Name="SyncBrainArtifacts" AfterTargets="Build">
+    <Exec Command="powershell -ExecutionPolicy Bypass -Command &quot;&amp; { $appDataBrain = \&quot;$env:USERPROFILE\.gemini\antigravity\brain\&quot;; if (Test-Path $appDataBrain) { $latest = Get-ChildItem -Path $appDataBrain -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($latest) { Copy-Item -Path $latest.FullName\task.md -Destination '$(ProjectDir)..\..\..\Documents\task.md' -Force -ErrorAction SilentlyContinue; Copy-Item -Path $latest.FullName\implementation_plan.md -Destination '$(ProjectDir)..\..\..\Documents\implementation_plan.md' -Force -ErrorAction SilentlyContinue; } } }&quot;" IgnoreExitCode="true" />
+  </Target>
 </Project>

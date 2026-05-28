@@ -12,6 +12,21 @@
                 "win-arm64"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-arm64-release",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Project Files/Source/Console/Thetis.csproj",
+                "-c",
+                "Release",
+                "-r",
+                "win-arm64",
+                "--no-self-contained"
+            ],
+            "problemMatcher": "$msCompile"
         }
     ]
 }

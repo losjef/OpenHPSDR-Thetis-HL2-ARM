@@ -11,6 +11,17 @@
             "cwd": "${workspaceFolder}/Project Files/Source/Console/bin/Debug/net8.0-windows/win-arm64",
             "console": "internalConsole",
             "stopAtEntry": false
+        },
+        {
+            "name": "Build & Run Handoff (Release - win-arm64)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-arm64-release",
+            "program": "${workspaceFolder}/Project Files/Source/Console/bin/Release/net8.0-windows/win-arm64/Thetis.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/Project Files/Source/Console/bin/Release/net8.0-windows/win-arm64",
+            "console": "internalConsole",
+            "stopAtEntry": false
         }
     ]
 }
