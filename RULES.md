@@ -12,9 +12,11 @@ This document outlines the strict collaboration rules and guidelines that **Anti
 - **Explicit Approval**: No modifications to existing source files or project configuration files may be made until the User has explicitly reviewed and approved the implementation plan in the chat.
 - **Scope Limitations**: Plans should be granular and broken down into logical phases. If a phase encounters unexpected complexity, execution must pause, and the plan must be revised and re-approved.
 
-## 3. Communication Style
-- **Conciseness**: Keep chat responses short, focused, and directly actionable.
-- **Transparency**: Highlight any risks (e.g., build breakages, compatibility issues with older Windows versions, performance regressions) immediately.
+## 3. Communication Style & Transparency
+- **Conciseness**: Keep chat responses focused, precise, and directly actionable, without unnecessary fluff.
+- **Ongoing Findings**: Provide deep technical details of ongoing compiler findings, DLL linkages, and design decisions in every response.
+- **Decision Logging**: Maintain and update all major design/porting decisions in [DECISIONS.md](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Documents/DECISIONS.md) to keep a persistent log for future contributors.
+- **Risk Identification**: Highlight any potential regressions (e.g., build breakages, performance issues, compatibility) immediately.
 - **File Links**: Always use clickable standard Markdown links for files and code elements using the `file://` scheme with forward slashes (e.g., `[Thetis_VS2026.sln](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis_VS2026.sln)`).
 
 ## 4. Code & Document Integrity
