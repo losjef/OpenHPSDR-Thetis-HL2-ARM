@@ -1,4 +1,4 @@
-﻿/*  Midi2Cat
+/*  Midi2Cat
 
 Description: A subsystem that facilitates mapping Windows MIDI devices to CAT commands.
  
@@ -83,12 +83,12 @@ namespace Midi2Cat.IO
         public static extern int MidiInPrepareHeader(IntPtr hMidiIn, IntPtr headerPtr, int cbMidiInHdr);
 
         [DllImport("winmm.dll", EntryPoint = "midiInUnprepareHeader")]
-        public static extern int MidiInUnprepareHeader(int hMidiIn, IntPtr headerPtr, int cbMidiInHdr);
+        public static extern int MidiInUnprepareHeader(IntPtr hMidiIn, IntPtr headerPtr, int cbMidiInHdr);
 
         [DllImport("winmm.dll", EntryPoint = "midiInGetErrorText")]
         public static extern int MidiInGetErrorText(int wError, StringBuilder lpText, int cchText);
 
-        unsafe public delegate int MidiInCallback(int hMidiIn, int wMsg, int dwInstance, int dwParam1, int dwParam2);
+        unsafe public delegate int MidiInCallback(IntPtr hMidiIn, int wMsg, IntPtr dwInstance, IntPtr dwParam1, IntPtr dwParam2);
 
         public struct MIDIINCAPS
         {
@@ -120,13 +120,13 @@ namespace Midi2Cat.IO
         public static extern int MidiOutShortMessage(IntPtr hMidiOut, uint dwMsg);
 
         [DllImport("winmm.dll", EntryPoint = "midiOutLongMsg")]
-        public static extern int MidiOutLongMessage(int handle, IntPtr headerPtr, int sizeOfMidiHeader);
+        public static extern int MidiOutLongMessage(IntPtr handle, IntPtr headerPtr, int sizeOfMidiHeader);
 
         [DllImport("winmm.dll", EntryPoint = "midiOutPrepareHeader")]
-        public static extern int MidiOutPrepareHeader(int handle, IntPtr headerPtr, int sizeOfMidiHeader);
+        public static extern int MidiOutPrepareHeader(IntPtr handle, IntPtr headerPtr, int sizeOfMidiHeader);
 
         [DllImport("winmm.dll", EntryPoint = "midiOutUnprepareHeader")]
-        public static extern int MidiOutUnprepareHeader(int handle, IntPtr headerPtr, int sizeOfMidiHeader);
+        public static extern int MidiOutUnprepareHeader(IntPtr handle, IntPtr headerPtr, int sizeOfMidiHeader);
 
         public struct MIDIOUTCAPS
         {

@@ -1,4 +1,4 @@
-﻿/*  Midi2Cat
+/*  Midi2Cat
 
 Description: A subsystem that facilitates mapping Windows MIDI devices to CAT commands.
  
@@ -351,7 +351,7 @@ namespace Midi2Cat.IO
         #region Midi In Callback
 
         //private Hashtable midi_in_table = new Hashtable(10);
-        private int InCallback(int hMidiIn, int wMsg, int dwInstance, int dwParam1, int dwParam2)
+        private int InCallback(IntPtr hMidiIn, int wMsg, IntPtr dwInstance, IntPtr dwParam1, IntPtr dwParam2)
         {
             lock (in_lock_obj)
             {
@@ -364,10 +364,11 @@ namespace Midi2Cat.IO
                         Debug.WriteLine("wMsg=MIM_CLOSE");
                         break;
                     case MIM_DATA:
-                        Command cmd = (Command)((byte)dwParam1);
-                        byte controlId = (byte)(dwParam1 >> 8);
-                        byte data = (byte)(dwParam1 >> 16);
-                        byte status = (byte)(dwParam1 & 0xFF);
+                        long val1 = dwParam1.ToInt64();
+                        Command cmd = (Command)((byte)val1);
+                        byte controlId = (byte)(val1 >> 8);
+                        byte data = (byte)(val1 >> 16);
+                        byte status = (byte)(val1 & 0xFF);
                         byte Event = (byte)((status & 0xF0)>>4);
                         byte channel = (byte)(status & 0x0F);
 
@@ -574,7 +575,7 @@ namespace Midi2Cat.IO
             return b;
         }
 
-        public static int SendMsg(int handle, ushort msg_id, byte protocol_id, ushort opcode, uint data1, uint data2)
+        public static int SendMsg(IntPtr handle, ushort msg_id, byte protocol_id, ushort opcode, uint data1, uint data2)
         {
             byte[] bytes = new byte[16];
             bytes[0] = 0xF0;
@@ -589,7 +590,7 @@ namespace Midi2Cat.IO
             return SendLongMessage(handle, bytes);
         }
         
-        public static int SendLongMessage(int handle, byte[] data)
+        public static int SendLongMessage(IntPtr handle, byte[] data)
         {
             /*Debug.Write("Midi Out: ");
             for(int i=0; i<data.Length; i++)

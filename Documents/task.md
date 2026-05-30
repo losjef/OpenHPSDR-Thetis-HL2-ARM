@@ -45,8 +45,8 @@ This document tracks all tasks, milestones, and progress for the porting effort.
 - [x] Compile `ChannelMaster.dll` and `cmASIO.dll` for ARM64
 - [x] Compile `wdsp.dll` for ARM64
 - [x] Compile C# projects (Thetis, Midi2Cat, RawInput) for ARM64
-- [/] Investigate and resolve runtime DLL loading (P/Invoke) issues
-  - [/] Audit P/Invoke signatures in [portaudio.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/portaudio.cs) and other source files to ensure compatibility with native 64-bit ARM DLLs under .NET 8
+- [x] Investigate and resolve runtime DLL loading (P/Invoke) issues
+  - [x] Audit P/Invoke signatures in [portaudio.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/portaudio.cs) and other source files to ensure compatibility with native 64-bit ARM DLLs under .NET 8
 
 ## Phase 4: Unit Testing & Verification
 - [ ] Write Unit/Integration Tests

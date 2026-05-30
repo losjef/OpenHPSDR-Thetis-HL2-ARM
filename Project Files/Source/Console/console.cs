@@ -13366,13 +13366,11 @@ namespace Thetis
                 always_on_top = value;
                 if (value)
                 {
-                    Win32.SetWindowPos(this.Handle.ToInt32(),
-                        -1, this.Left, this.Top, this.Width, this.Height, 0);
+                    Win32.SetWindowPos(this.Handle, (IntPtr)(-1), this.Left, this.Top, this.Width, this.Height, 0);
                 }
                 else
                 {
-                    Win32.SetWindowPos(this.Handle.ToInt32(),
-                        -2, this.Left, this.Top, this.Width, this.Height, 0);
+                    Win32.SetWindowPos(this.Handle, (IntPtr)(-2), this.Left, this.Top, this.Width, this.Height, 0);
                 }
             }
         }

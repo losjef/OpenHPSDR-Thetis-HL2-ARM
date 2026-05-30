@@ -83,7 +83,7 @@ namespace Thetis
         public static extern void memset(void* addr, byte val, int n);
 
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        public static extern int SetWindowPos(int hwnd, int hWndInsertAfter, int x, int y, int cx, int cy, int wFlags);
+        public static extern int SetWindowPos(IntPtr hwnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, int wFlags);
 
         [DllImport("user32.dll", EntryPoint = "keybd_event", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern void keybd_event(byte vk, byte scan, int flags, int extrainfo);

@@ -1,1 +1,1 @@
-namespace Thetis { public static class VersionInfo { public static string BuildDate => "05/28/26"; } }
+namespace Thetis { public static class VersionInfo { public static string BuildDate => "05/30/26"; } }

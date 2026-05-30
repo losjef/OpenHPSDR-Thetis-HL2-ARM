@@ -1,4 +1,4 @@
-﻿/*  clsNotchPopup.cs
+/*  clsNotchPopup.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -82,13 +82,11 @@ namespace Thetis
 
             if (top) //MW0LGE_21k9
             {
-                Win32.SetWindowPos(this.Handle.ToInt32(),
-                    -1, this.Left, this.Top, this.Width, this.Height, 0);
+                Win32.SetWindowPos(this.Handle, (IntPtr)(-1), this.Left, this.Top, this.Width, this.Height, 0);
             }
             else
             {
-                Win32.SetWindowPos(this.Handle.ToInt32(),
-                    -2, this.Left, this.Top, this.Width, this.Height, 0);
+                Win32.SetWindowPos(this.Handle, (IntPtr)(-2), this.Left, this.Top, this.Width, this.Height, 0);
             }
 
             trkWidth.Minimum = minWidth;
