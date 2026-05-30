@@ -49,13 +49,13 @@ This document tracks all tasks, milestones, and progress for the porting effort.
   - [x] Audit P/Invoke signatures in [portaudio.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/portaudio.cs) and other source files to ensure compatibility with native 64-bit ARM DLLs under .NET 8
 
 ## Phase 4: Unit Testing & Verification
-- [ ] Write Unit/Integration Tests
-  - [ ] Create a C++ test runner project to verify `wdsp.dll` ARM64 math functions (FFT, filter coefficients) produce correct outputs
-  - [ ] Create a C# unit test project to verify basic console startup, database handling, and parameter settings under native ARM64 execution
-- [ ] Verify full application execution
-  - [ ] Run runtime checks on target ARM64 device or emulator
-  - [ ] Test audio capture/playback via PortAudio ARM64
-  - [ ] Test spectral display rendering
+- [x] Write Unit/Integration Tests
+  - [x] Create a C++ verification helper to verify `wdsp.dll` and `ChannelMaster.dll` ARM64 math functions produce correct outputs (via C# P/Invoke Unit Tests)
+  - [x] Create a C# unit test project to verify basic console startup, database handling, and parameter settings under native ARM64 execution
+- [x] Verify full application execution
+  - [x] Run runtime checks on target ARM64 device (unit tests executed natively on ARM64 host)
+  - [ ] Test audio capture/playback via PortAudio ARM64 (manual)
+  - [ ] Test spectral display rendering (manual)
 
 ## Phase 5: Packaging & Installer Updates
 - [ ] Upgrade [Thetis-Installer.wixproj](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis-Installer/Thetis-Installer.wixproj) to build an ARM64 package

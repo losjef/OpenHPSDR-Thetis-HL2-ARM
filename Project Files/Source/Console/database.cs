@@ -56,7 +56,7 @@ using System.Diagnostics;
 
 namespace Thetis
 {
-    class DB
+    public class DB
     {
         #region Variable Declaration
 
