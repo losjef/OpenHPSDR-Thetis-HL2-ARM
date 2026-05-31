@@ -1,4 +1,4 @@
-﻿/*  clsHardwareSpecific.cs
+/*  clsHardwareSpecific.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -380,7 +380,7 @@ namespace Thetis
                 case "ANAN-G1":
                     return HPSDRModel.ANAN_G1; //N1GP G1 added
                 default:
-                    return HPSDRModel.HERMES;
+                    return HPSDRModel.HERMESLITE;
             }
         }
         public static string EnumModelToString(HPSDRModel model)
@@ -418,7 +418,7 @@ namespace Thetis
                 case HPSDRModel.REDPITAYA:
                     return "RED-PITAYA";
                 default:
-                    return "HERMES";
+                    return "HERMES-LITE";
             }
         }
         public static string ModelString

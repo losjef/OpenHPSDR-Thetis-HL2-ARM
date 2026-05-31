@@ -174,7 +174,7 @@ namespace Thetis
             // MW0LGE note: this will allways cause the change event to fire, as the combobox does not contain any default value
             // it is bypassed in the event by use of the initializing flag, and is then
             // forced through in ForceAllEvents. This is the default radio with a blank database.
-            if (comboRadioModel.Text == "") comboRadioModel.Text = "HERMES";
+            if (comboRadioModel.Text == "") comboRadioModel.Text = "HERMES LITE";
             //
 
             labelSavingLoading.Visible = false;// MW0LGE gets shown/hidden by save/cancel/apply
@@ -1726,7 +1726,7 @@ namespace Thetis
                 return HardwareSpecific.StringModelToEnum(a["comboRadioModel"]);
             }
             else
-                return HPSDRModel.FIRST;
+                return HPSDRModel.HERMESLITE;
         }
         private bool _gettingOptions = false;
         private void getOptions(List<string> recoveryList = null)
@@ -1812,12 +1812,12 @@ namespace Thetis
                 string val = a["comboRadioModel"];
                 if (!comboRadioModel.Items.Contains(val))
                 {
-                    DialogResult dr = MessageBox.Show($"The radio model stored in the database is not known by this version of Thetis [{val}]. \n\nAre you using the correct version ? It will be reset back to HERMES.",
+                    DialogResult dr = MessageBox.Show($"The radio model stored in the database is not known by this version of Thetis [{val}]. \n\nAre you using the correct version ? It will be reset back to HERMES LITE.",
                     "Model version issue",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
 
-                    a["comboRadioModel"] = HPSDRModel.HERMES.ToString();
+                    a["comboRadioModel"] = HPSDRModel.HERMESLITE.ToString();
                 }
             }
 

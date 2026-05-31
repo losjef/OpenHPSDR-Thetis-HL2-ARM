@@ -1,61 +1,111 @@
-# Implementation Plan: Fix Hermes Lite Model Selection Hang & Step Attenuator Range Crash
+# Implementation Plan: Soft Dedicate OpenHPSDR-Thetis to Hermes-Lite 2
 
-This plan addresses the crash/hang occurring when selecting the "Hermes Lite" radio model. The issue is caused by C# Windows Forms `NumericUpDown` controls throwing an unhandled `ArgumentOutOfRangeException` when their bounds (`Minimum` / `Maximum`) are modified while their current `.Value` property lies outside the target bounds. This happens during model transitions for step attenuator controls (`udRX1StepAttData`, `udRX2StepAttData`, `udTXStepAttData`) on the main console form, and the band-gain controls (`nud160M` to `nud10M`) on the setup form.
+This plan outlines the changes to soft-dedicate the Thetis application to the Hermes-Lite 2 (HL2) SDR. Instead of risky physical removal of legacy radio configuration files, we will restrict the configuration paths, dropdown options, and default fallback models specifically to the HL2.
 
-Additionally, we fix a typo in the `validateTXStepAttData` validation logic.
+---
+
+## User Review Required
+
+Please review the proposed architectural locks:
+
+> [!IMPORTANT]
+> **Dropdown Selection Restrictions**
+> - The radio model select dropdown (`comboRadioModel`) will have all other models (ANAN series, Red Pitaya, etc.) removed, leaving `"HERMES LITE"` as the sole option.
+> - Any legacy database profile containing a different radio model will automatically trigger a fallback reset to `"HERMES LITE"` instead of the upstream default `"HERMES"`.
+
+---
 
 ## Proposed Changes
 
-### Component 1: Console / Main Form Attenuator Controls
-#### [MODIFY] [console.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/console.cs)
-1. Add a `SafeSetBounds` helper method to `Console` that safely updates the bounds of a `NumericUpDown` (or `NumericUpDownTS`) control without throwing exceptions:
-   ```csharp
-   private void SafeSetBounds(System.Windows.Forms.NumericUpDown ud, decimal min, decimal max, int decimalPlaces = 0, decimal increment = 1)
-   {
-       if (ud == null) return;
-       decimal val = ud.Value;
-       if (val < min) val = min;
-       if (val > max) val = max;
-       if (min < ud.Minimum) ud.Minimum = min;
-       if (max > ud.Maximum) ud.Maximum = max;
-       ud.Value = val;
-       ud.Minimum = min;
-       ud.Maximum = max;
-       ud.DecimalPlaces = decimalPlaces;
-       ud.Increment = increment;
-   }
-   ```
-2. In `SetupForHPSDRModel()`, safely initialize the limits of `udRX1StepAttData`, `udRX2StepAttData`, and `udTXStepAttData` using `SafeSetBounds`.
-   - For `HERMESLITE`: set range to `[-28, 31]` with 0 decimal places and 1 increment.
-   - For other models: reset range to `[0, 61]` (if `alexpresent` and conditions met) or `[0, 31]` for RX, and `[0, 31]` for TX.
-3. In `RX1AttenuatorData` and `RX2AttenuatorData` property setters, replace direct assignments to `.Maximum` and `.Minimum` on step attenuator controls with `SafeSetBounds`.
-4. In `validateTXStepAttData(int att)`, fix the typo:
-   - Change: `if (att < udRX1StepAttData.Minimum) att = (int)udTXStepAttData.Minimum;`
-   - To: `if (att < udTXStepAttData.Minimum) att = (int)udTXStepAttData.Minimum;`
+### Component 1: Setup GUI & Form Behavior
 
-### Component 2: Setup Form Band Gain Controls
+#### [MODIFY] [setup.designer.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/setup.designer.cs)
+Remove all entries in the `comboRadioModel` item array except for `"HERMES LITE"`:
+```diff
+             this.comboRadioModel.Items.AddRange(new object[] {
+-            "HERMES",
+-            "HERMES LITE",
+-            "ANAN-10",
+-            "ANAN-10E",
+-            "ANAN-100",
+-            "ANAN-100B",
+-            "ANAN-100D",
+-            "ANAN-200D",
+-            "ANAN-7000DLE",
+-            "ANAN-8000DLE",
+-            "ANAN-G1",
+-            "ANAN-G2",
+-            "ANAN-G2-1K",
+-            "ANVELINA-PRO3",
+-            "RED-PITAYA"});
++            "HERMES LITE"});
+```
+
 #### [MODIFY] [setup.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/setup.cs)
-1. Add a null check to `SafeSetBounds` in `setup.cs`.
-2. In `comboRadioModel_SelectedIndexChanged`:
-   - At the beginning, reset the range of `nud160M` through `nud10M` to the default `[38.8, 100]` (with 1 decimal place and 0.1 increment) using `SafeSetBounds`.
-   - In case `HPSDRModel.HERMESLITE:`, change the range of `nud160M` through `nud10M` to `[0, 100]` (with 0 decimal places and 1 increment) using `SafeSetBounds`. This replaces the direct, unsafe property assignments in lines 20408 to 20439.
+1. In `AfterConstructor()`, change default fallback text from `"HERMES"` to `"HERMES LITE"`:
+   ```diff
+-  if (comboRadioModel.Text == "") comboRadioModel.Text = "HERMES";
++  if (comboRadioModel.Text == "") comboRadioModel.Text = "HERMES LITE";
+   ```
+2. In `getOptions()`, change the database validation fallback from `HPSDRModel.HERMES` to `HPSDRModel.HERMESLITE`:
+   ```diff
+-  a["comboRadioModel"] = HPSDRModel.HERMES.ToString();
++  a["comboRadioModel"] = HPSDRModel.HERMESLITE.ToString();
+   ```
+3. In `getModelFromDB()`, default to `HPSDRModel.HERMESLITE` if not found in the database:
+   ```diff
+-  else
+-      return HPSDRModel.FIRST;
++  else
++      return HPSDRModel.HERMESLITE;
+   ```
 
-### Component 3: Unit Tests
-#### [MODIFY] [WdspTests.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis.Tests/WdspTests.cs)
-1. Add a unit test `TestSetupRadioModelTransition` that instantiates a `Setup` form, mocks basic fields, and simulates transitions between `HPSDRModel.HERMES` and `HPSDRModel.HERMESLITE` back and forth.
-2. Verify that all setup controls and attenuator controls update their ranges correctly and no `ArgumentOutOfRangeException` or other range exception is thrown during transitions.
+---
+
+### Component 2: Model & Hardware Mappings
+
+#### [MODIFY] [clsHardwareSpecific.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/clsHardwareSpecific.cs)
+1. Change default case in `StringModelToEnum`:
+   ```diff
+   default:
+-      return HPSDRModel.HERMES;
++      return HPSDRModel.HERMESLITE;
+   ```
+2. Change default case in `EnumModelToString`:
+   ```diff
+   default:
+-      return "HERMES";
++      return "HERMES-LITE";
+   ```
+
+---
+
+### Component 3: Database Manager Defaults
+
+#### [MODIFY] [clsDBMan.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/clsDBMan.cs)
+1. Update `JsonConverter` default attribute for the database model:
+   ```diff
+-  [JsonConverter(typeof(DatabaseInfoDefaultStringEnumConverter), HPSDRModel.HERMES)]
++  [JsonConverter(typeof(DatabaseInfoDefaultStringEnumConverter), HPSDRModel.HERMESLITE)]
+   ```
+2. Update default property values in `DatabaseInfo()` constructor:
+   ```diff
+-  Model = HPSDRModel.HERMES;
++  Model = HPSDRModel.HERMESLITE;
+   ```
+3. Update fallback checks in `DBWritten()` (line 541), `LoadDB` (line 1458, 1468), and backup imports (line 1808, 1831) to default to `HPSDRModel.HERMESLITE`.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Run the MSTest suite to verify compilation and execution:
+- Run unit/integration tests to ensure no model-selection or database loading regressions exist:
   ```powershell
-  dotnet test "Project Files/Source/Thetis.Tests/Thetis.Tests.csproj" -c Debug -r win-arm64
+  dotnet test "Project Files/Source/Thetis.Tests/Thetis.Tests.csproj" -c Release -r win-arm64
   ```
 
 ### Manual Verification
-- Open the application and navigate to `Setup -> H/W Select -> Radio Model`.
-- Switch the Radio Model from "Hermes" (or other models) to "Hermes Lite", back to "Hermes", and then back to "Hermes Lite" again.
-- Verify that the transitions complete instantly and without any crash or UI freeze.
+- Launch Thetis on the ARM64 device or build environment.
+- Verify that "Radio Model" in Setup defaults automatically to `"HERMES LITE"`.
+- Click the dropdown to verify that no other radio models are displayed or selectable.

@@ -72,4 +72,58 @@ Thetis's GUI is a C# WinForms application targeting `.NET Framework 4.8`.
 - If the application references FTDI packages (e.g. NuGet packages in the C# project), we can leave them as AnyCPU/x86/x64 assemblies. As long as the runtime execution path for HL2 does not call or initialize the native FTDI drivers, the application will run fine without native ARM64 FTDI DLLs.
 - This reduces porting complexity and risk, allowing us to focus entirely on the core DSP libraries (`wdsp`) and the network sockets/audio interfaces.
 
+---
+
+## 6. Hermes-Lite 2 Exclusive Client Optimization Analysis
+
+### Context
+During Phase 8 (HL2 Capabilities & Review), we analyzed the architecture of Thetis in comparison to a dedicated SDR client built solely and purely for the Hermes-Lite 2 (HL2).
+
+### Decision: Documenting Community Fork & Ground-Up Optimization Opportunities
+While the Windows ARM64 port successfully executes the C# WinForms frontend and native DSP/network libraries, future development efforts or alternative client projects can target the following architectural optimization vectors:
+
+1. **Existing mi0bot Fork (Reid Campbell) Optimizations** (Reference: [mi0bot/Gi8TME](https://github.com/mi0bot/Gi8TME)):
+   - **31-Step Attenuation Loop**: Repurpose control data bits to supply 31 physical steps over the HL2's internal LNA gain.
+   - **16-Stage TX Drive Control**: Rescale software transmit sliders to map smoothly onto the 16 hardware power amplifier stages of the HL2.
+   - **N2ADR Integration**: Map specific hardware/UI control buttons to automatically configure companion filter boards (e.g. N2ADR companion board) on band change.
+   - **PureSignal Corrections**: Correct/adapt the feedback calibration algorithm to handle HL2 feedback loop responses.
+
+2. **Ground-Up Exclusive HL2 SDR Client Opportunities**:
+   - **Stripping Legacy Code & UI Bloat**: Thetis is based on a legacy PowerSDR codebase with files up to 50k lines of code. Rebuilding a dedicated client enables a modern, lightweight, responsive UI with native cross-platform support (Linux, macOS, Windows) without emulation/Wine.
+   - **Unleashing the Network Protocol**: Bypass legacy HPSDR Protocol 1 (100 Mbps, 384 kHz sample rate limit) and leverage Protocol 2 alongside custom HL2 gateware. This utilizes the full physical 1 Gbps interface for independent receiver clocking and higher bandwidths.
+   - **Database Independence**: Avoid parallel profile configuration directories and XML mapping workarounds by separating the client configuration completely from legacy ANAN/Apache Labs databases.
+
+---
+
+## 7. Programming Language Decision for Ground-Up Client (Rust vs. C/C++)
+
+### Context
+A ground-up Hermes-Lite 2 client requires a robust architectural foundation handling real-time UDP packet processing, multi-threaded DSP pipelines, low-latency audio rendering, and a high-performance visual display.
+
+> [!IMPORTANT]
+> **Target Platform Constraints**
+> This project is designed strictly and exclusively for native Windows ARM64 execution. There are no cross-platform requirements (no Linux or macOS support is needed), nor are there legacy x86/x64 compatibility requirements. The entire backend and frontend architecture is optimized for a single platform: Windows ARM64.
+
+### Reference Document
+- For a detailed, point-by-point technical comparison, see [rust_vs_cpp_comparison.md](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Documents/rust_vs_cpp_comparison.md).
+
+### Summary Analysis
+- **Rust** provides a compile-time guarantee of memory safety and thread safety ("Fearless Concurrency"), preventing common SDR bugs like data races, pointer corruption, and heap memory leaks without GC pauses. It is highly suited for the network and DSP pipelines.
+- **C/C++** remains the industry standard for traditional DSP toolkits (Liquid-SDR, VOLK) and has qualitative tooling for native GUI layouts (Qt6) and seamless integration with Windows APIs.
+- **Architectural Approaches**:
+  1. *Pure Rust Backend + Frontend (egui/Slint)*: Excellent for safety, dependency management (`cargo`), and direct compilation to Windows ARM64.
+  2. *Hybrid Approach (Rust DSP Core + C++ Qt GUI)*: Offers the best of both worlds by wrapping Rust's thread-safe network and DSP logic in a DLL with a C ABI, consumed by a native, feature-rich C++ Qt user interface targeting Windows ARM64.
+
+### Final Decision: C / C++ / C# with Compile-Time and AI Guardrails
+- **Selection**: We will stay with the C/C++/C# technology stack for the ground-up Windows ARM64 client.
+  - **Frontend**: C# (utilizing modern .NET 8.0/10.0 and Windows-native UI frameworks like WPF or WinUI 3) to provide a rich, polished desktop GUI.
+  - **Backend**: Modern C++ (C++20/C++23) for low-latency network I/O, audio streaming (WASAPI), and DSP pipelines.
+- **Safety Enforcement**:
+  - Memory and concurrency safety will be enforced via strict compiler flags (`/W4`, `/WX`, `/analyze`), AddressSanitizer (`/fsanitize=address`), C++ Core Guidelines checkers in MSVC, and modern C# safety features (nullable types, Roslyn analyzers, `Span<T>`).
+  - An AI coding guidelines rulebook has been established in the repository at [AI_RULES.md](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Documents/AI_RULES.md) to ensure any assistant-driven code conforms to this strict modern safety model.
+
+
+
+
+
 

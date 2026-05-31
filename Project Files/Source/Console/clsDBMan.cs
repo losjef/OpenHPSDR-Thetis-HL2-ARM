@@ -1,4 +1,4 @@
-﻿/*  clsDBMan.cs
+/*  clsDBMan.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -81,7 +81,7 @@ namespace Thetis
             public bool BackupOnShutdown {  get; set; }
 
             //[JsonConverter(typeof(StringEnumConverter))] //this will turn the enum (int) to a string
-            [JsonConverter(typeof(DatabaseInfoDefaultStringEnumConverter), HPSDRModel.HERMES)] //[2.10.3.8]MW0LGE a custom string converter, that will default to HERMES if the model is not in the enum
+            [JsonConverter(typeof(DatabaseInfoDefaultStringEnumConverter), HPSDRModel.HERMESLITE)] //[2.10.3.8]MW0LGE a custom string converter, that will default to HERMESLITE if the model is not in the enum
             public HPSDRModel Model { get; set; }
 
             public class DatabaseInfoDefaultStringEnumConverter : StringEnumConverter
@@ -116,7 +116,7 @@ namespace Thetis
                 Size = 0;
                 Description = "";
                 LastChanged = DateTime.Now;
-                Model = HPSDRModel.HERMES;
+                Model = HPSDRModel.HERMESLITE;
                 CreationTime = DateTime.Now;
                 VersionString = "unknown";
                 VersionNumber = "unknown";
@@ -538,7 +538,7 @@ namespace Thetis
                 if (options.ContainsKey("comboRadioModel"))
                     di.Model = HardwareSpecific.StringModelToEnum(options["comboRadioModel"]);
                 else
-                    di.Model = HPSDRModel.HERMES;
+                    di.Model = HPSDRModel.HERMESLITE;
 
                 di.VersionString = DB.VersionString;
                 di.VersionNumber = DB.VersionNumber;
@@ -1455,7 +1455,7 @@ namespace Thetis
                         ok = DB.Init();
                         _ignore_written = false;
 
-                        HPSDRModel model = HPSDRModel.HERMES;
+                        HPSDRModel model = HPSDRModel.HERMESLITE;
                         string version = "";
                         string version_number = "";
                         if (ok)
@@ -1465,7 +1465,7 @@ namespace Thetis
                             if (options.ContainsKey("comboRadioModel"))
                                 model = HardwareSpecific.StringModelToEnum(options["comboRadioModel"]);
                             else
-                                model = HPSDRModel.HERMES;
+                                model = HPSDRModel.HERMESLITE;
 
                             version = DB.VersionString;
                             version_number = DB.VersionNumber;
@@ -1805,7 +1805,7 @@ namespace Thetis
                     File.Copy(file_path, db_file, true);
 
                     // obtain db imfo
-                    HPSDRModel model = HPSDRModel.HERMES;
+                    HPSDRModel model = HPSDRModel.HERMESLITE;
                     string version = "unknown";
                     string version_number = "unknown";
 
@@ -1828,7 +1828,7 @@ namespace Thetis
                     if (options.ContainsKey("comboRadioModel"))
                         model = HardwareSpecific.StringModelToEnum(options["comboRadioModel"]);
                     else
-                        model = HPSDRModel.HERMES;
+                        model = HPSDRModel.HERMESLITE;
 
                     version = DB.VersionString;
                     version_number = DB.VersionNumber;
