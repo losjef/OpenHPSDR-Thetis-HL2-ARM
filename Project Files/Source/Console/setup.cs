@@ -20131,6 +20131,19 @@ namespace Thetis
             if (initializing) return;
             console.QSOTimerFlashAfterAutoReset = chkQSOTimerFlashTimerIfResetOnExpiry.Checked;
         }
+        private void SafeSetBounds(NumericUpDown ud, decimal min, decimal max, int decimalPlaces = 0, decimal increment = 1)
+        {
+            decimal val = ud.Value;
+            if (val < min) val = min;
+            if (val > max) val = max;
+            if (min < ud.Minimum) ud.Minimum = min;
+            if (max > ud.Maximum) ud.Maximum = max;
+            ud.Value = val;
+            ud.Minimum = min;
+            ud.Maximum = max;
+            ud.DecimalPlaces = decimalPlaces;
+            ud.Increment = increment;
+        }
         private void comboRadioModel_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (initializing) return; // forceallevents will call this  // [2.10.1.0] MW0LGE renabled
@@ -20141,14 +20154,22 @@ namespace Thetis
             HardwareSpecific.Model = new_model;
 
             // Reset control bounds to defaults before applying model-specific restrictions to prevent ArgumentOutOfRangeException
-            udTXTunePower.Maximum = (decimal)100;
-            udTXTunePower.Minimum = (decimal)0;
-            udTXTunePower.DecimalPlaces = 0;
-            udTXTunePower.Increment = (decimal)1;
+            SafeSetBounds(udTXTunePower, 0, 100, 0, 1);
+            SafeSetBounds(udATTOnTX, 0, udATTOnTX.Maximum, udATTOnTX.DecimalPlaces, udATTOnTX.Increment);
+            SafeSetBounds(udHermesStepAttenuatorData, 0, udHermesStepAttenuatorData.Maximum, udHermesStepAttenuatorData.DecimalPlaces, udHermesStepAttenuatorData.Increment);
+            SafeSetBounds(udHermesStepAttenuatorDataRX2, 0, udHermesStepAttenuatorDataRX2.Maximum, udHermesStepAttenuatorDataRX2.DecimalPlaces, udHermesStepAttenuatorDataRX2.Increment);
 
-            udATTOnTX.Minimum = (decimal)0;
-            udHermesStepAttenuatorData.Minimum = (decimal)0;
-            udHermesStepAttenuatorDataRX2.Minimum = (decimal)0;
+            // Reset band-gain bounds to non-HL2 defaults
+            SafeSetBounds(nud160M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud80M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud60M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud40M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud30M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud20M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud17M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud15M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud12M, (decimal)38.8, 100, 1, (decimal)0.1);
+            SafeSetBounds(nud10M, (decimal)38.8, 100, 1, (decimal)0.1);
 
             console.SetupForHPSDRModel();
 
@@ -20260,9 +20281,8 @@ namespace Thetis
                     chkRX2StepAtt.Enabled = false;
                     chkRX2StepAtt.Visible = false;
                     udHermesStepAttenuatorDataRX2.Visible = false;
-                    udHermesStepAttenuatorDataRX2.Minimum = (decimal)-28;
-                    udHermesStepAttenuatorData.Maximum = 31;
-                    udHermesStepAttenuatorDataRX2.Maximum = 31;
+                    SafeSetBounds(udHermesStepAttenuatorData, udHermesStepAttenuatorData.Minimum, 31, udHermesStepAttenuatorData.DecimalPlaces, udHermesStepAttenuatorData.Increment);
+                    SafeSetBounds(udHermesStepAttenuatorDataRX2, (decimal)-28, 31, udHermesStepAttenuatorDataRX2.DecimalPlaces, udHermesStepAttenuatorDataRX2.Increment);
                     chkAutoPACalibrate.Checked = false;
                     chkAutoPACalibrate.Visible = false;
                     labelRXAntControl.Text = "  RX1   RX2    XVTR";
@@ -20382,10 +20402,7 @@ namespace Thetis
                     chkANAN8000DLEDisplayVoltsAmps.Text = "Show Temp/Current";
                     chkANAN8000DLEDisplayVoltsAmps.Checked = true;
 
-                    udTXTunePower.DecimalPlaces = 1;
-                    udTXTunePower.Increment = (decimal)0.5;
-                    udTXTunePower.Maximum = (decimal)0;
-                    udTXTunePower.Minimum = (decimal)-16.5;
+                    SafeSetBounds(udTXTunePower, (decimal)-16.5, 0, 1, (decimal)0.5);
 
                     chkCATtoVFOB.Enabled = true;
                     chkCATtoVFOB.Visible = true;
@@ -20398,40 +20415,18 @@ namespace Thetis
                     chkHL2IOBoardPresent.Enabled = true;
                     chkHL2IOBoardPresent.Visible = true;
 
-                    udATTOnTX.Minimum = (decimal)-28;
+                    SafeSetBounds(udATTOnTX, (decimal)-28, udATTOnTX.Maximum, udATTOnTX.DecimalPlaces, udATTOnTX.Increment);
 
-                    nud160M.Minimum = 0;
-                    nud80M.Minimum = 0;
-                    nud60M.Minimum = 0;
-                    nud40M.Minimum = 0;
-                    nud30M.Minimum = 0;
-                    nud20M.Minimum = 0;
-                    nud17M.Minimum = 0;
-                    nud15M.Minimum = 0;
-                    nud12M.Minimum = 0;
-                    nud10M.Minimum = 0;
-
-                    nud160M.Increment = 1;
-                    nud80M.Increment = 1;
-                    nud60M.Increment = 1;
-                    nud40M.Increment = 1;
-                    nud30M.Increment = 1;
-                    nud20M.Increment = 1;
-                    nud17M.Increment = 1;
-                    nud15M.Increment = 1;
-                    nud12M.Increment = 1;
-                    nud10M.Increment = 1;
-
-                    nud160M.DecimalPlaces = 0;
-                    nud80M.DecimalPlaces = 0;
-                    nud60M.DecimalPlaces = 0;
-                    nud40M.DecimalPlaces = 0;
-                    nud30M.DecimalPlaces = 0;
-                    nud20M.DecimalPlaces = 0;
-                    nud17M.DecimalPlaces = 0;
-                    nud15M.DecimalPlaces = 0;
-                    nud12M.DecimalPlaces = 0;
-                    nud10M.DecimalPlaces = 0;
+                    SafeSetBounds(nud160M, 0, 100, 0, 1);
+                    SafeSetBounds(nud80M, 0, 100, 0, 1);
+                    SafeSetBounds(nud60M, 0, 100, 0, 1);
+                    SafeSetBounds(nud40M, 0, 100, 0, 1);
+                    SafeSetBounds(nud30M, 0, 100, 0, 1);
+                    SafeSetBounds(nud20M, 0, 100, 0, 1);
+                    SafeSetBounds(nud17M, 0, 100, 0, 1);
+                    SafeSetBounds(nud15M, 0, 100, 0, 1);
+                    SafeSetBounds(nud12M, 0, 100, 0, 1);
+                    SafeSetBounds(nud10M, 0, 100, 0, 1);
 
                     break;
 
@@ -30124,6 +30119,7 @@ namespace Thetis
         
         private void ucOutPinsLedStripHF_Click(object sender, EventArgs e)
         {
+            if (console == null || !console.PowerOn) return;
             byte[] read_data = new byte[4];
             int status = 0;
             int timeout = 0;
@@ -30157,6 +30153,7 @@ namespace Thetis
 
         private void ucOutPinsLedStripHF_MouseDown(object sender, MouseEventArgs e)
         {
+            if (console == null || !console.PowerOn) return;
             if (HL2IOBoardPresent == true)
             {
                 if (chkIOPinControl.Checked)

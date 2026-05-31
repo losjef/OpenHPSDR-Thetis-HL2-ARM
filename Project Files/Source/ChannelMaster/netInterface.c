@@ -820,6 +820,7 @@ void SetLineBoost(int bits)
 PORT // MI0BOT: Causes a HL2 to perform a reset on disconnect
 void SetResetOnDisconnect(int bit)
 {
+	if (prn == NULL) return;
 	if (prn->reset_on_disconnect != bit)
 	{
 		prn->reset_on_disconnect = bit & 0x1;
@@ -827,9 +828,9 @@ void SetResetOnDisconnect(int bit)
 }
 
 PORT // MI0BOT: Control to swap the left and right audio channels send over P1
-
 void SwapAudioChannels(int swap)
 {
+	if (prn == NULL) return;
 	if (prn->swap_audio_channels != swap)
 	{
 		prn->swap_audio_channels = swap & 0x1;

@@ -76,6 +76,23 @@ This document tracks all tasks, milestones, and progress for the porting effort.
 - [x] Add unit/integration tests to verify model selection safety and CM router loading
 - [x] Build solution and run test suite to verify success
 
+## Phase 7b: Step Attenuator & Band-Gain Range Crash Fixes
+- [x] Add SafeSetBounds to console.cs and configure step attenuator bounds dynamically
+- [x] Safe-guard RX1AttenuatorData and RX2AttenuatorData setters in console.cs using SafeSetBounds
+- [x] Fix typo in validateTXStepAttData in console.cs
+- [x] Safely transition band-gain controls (nud160M to nud10M) in setup.cs using SafeSetBounds
+- [x] Add unit test simulating Hermes Lite/Hermes transition in WdspTests.cs
+- [x] Verify build and run unit tests successfully
 
+## Phase 7c: Serialization & I2C Power Safety
+- [x] Convert ConcurrentDictionary structures in MeterManager.cs to serializable Dictionary during serialization
+- [x] Support backward compatibility during deserialization in RestoreSaveData2 and TryParse2
+- [x] Implement console.PowerOn guards in ucOutPinsLedStripHF click and mouse down event handlers
+- [x] Rebuild C# solution and execute WdspTests suite to verify all checks pass successfully
 
-
+## Phase 8: Hermes Lite 2 Capabilities & Review
+- [x] Review codebase for potential improvements in reference to actual HL2 hardware and software capabilities
+  - [x] Analyze UDP packet processing/buffering optimization for Windows on ARM64 network stacks (addressed via endpoint cache and multi-meter UDP safety)
+  - [x] Review PureSignal feedback scaling configuration compatibility and calibration parameters
+  - [x] Evaluate EXT I/O (DB9 pinout) relay/filter switching compatibility with standard companion boards
+  - [x] Audit low-latency gateware-based CW keying configurations

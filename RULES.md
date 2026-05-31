@@ -22,3 +22,10 @@ This document outlines the strict collaboration rules and guidelines that **Anti
 ## 4. Code & Document Integrity
 - **Preserve Documentation**: Do not remove, modify, or truncate existing code comments, docstrings, or license headers unless explicitly requested by the User.
 - **Testing & Verification**: Every implementation plan must include a clear verification plan detailing how the changes will be tested (both automated and manual steps).
+
+## 5. Hermes Lite 2 Reference Sources
+- **Official References**: All hardware integration, protocol changes, register manipulation, and DSP changes for the Hermes Lite 2 (HL2) model must refer to and be consistent with:
+  - [Hermes Lite 2 Hardware Notes](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Documentation/HL2/Hermes%20Lite%202%20Hardware%20Notes.md)
+  - The official [Hermes-Lite2 GitHub Repository](https://github.com/softerhardware/Hermes-Lite2)
+- **Gateware & Protocol Compliance**: Any protocol-level changes must verify compatibility with HL2 gateware and FPGA register constraints as documented in these sources.
+

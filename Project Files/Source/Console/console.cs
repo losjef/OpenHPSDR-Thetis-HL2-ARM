@@ -10997,7 +10997,7 @@ namespace Thetis
         private int validateTXStepAttData(int att)
         {
             if (att > udTXStepAttData.Maximum) att = (int)udTXStepAttData.Maximum;
-            if (att < udRX1StepAttData.Minimum) att = (int)udTXStepAttData.Minimum;
+            if (att < udTXStepAttData.Minimum) att = (int)udTXStepAttData.Minimum;
             return att;
         }
         //
@@ -11060,8 +11060,7 @@ namespace Thetis
                 
                 if (HardwareSpecific.Model == HPSDRModel.HERMESLITE)       // MI0BOT: HL2 LNA has wider range
                 {
-                    udRX1StepAttData.Maximum = (decimal)32;
-                    udRX1StepAttData.Minimum = (decimal)-28;
+                    SafeSetBounds(udRX1StepAttData, (decimal)-28, 32, udRX1StepAttData.DecimalPlaces, udRX1StepAttData.Increment);
                 }
                 else if (alexpresent &&
                     HardwareSpecific.Model != HPSDRModel.ANAN10 &&
@@ -11074,9 +11073,13 @@ namespace Thetis
                     HardwareSpecific.Model != HPSDRModel.ANAN_G2_1K &&
                     HardwareSpecific.Model != HPSDRModel.ANVELINAPRO3 &&
                     HardwareSpecific.Model != HPSDRModel.REDPITAYA) //DH1KLM
-                    udRX1StepAttData.Maximum = (decimal)61;
+                {
+                    SafeSetBounds(udRX1StepAttData, 0, 61, udRX1StepAttData.DecimalPlaces, udRX1StepAttData.Increment);
+                }
                 else
-                    udRX1StepAttData.Maximum = (decimal)31;
+                {
+                    SafeSetBounds(udRX1StepAttData, 0, 31, udRX1StepAttData.DecimalPlaces, udRX1StepAttData.Increment);
+                }
                 _from_attenuatordata[0] = false;
 
                 _rx1_attenuator_data = validateRX1StepAttData(_rx1_attenuator_data); //[2.10.3.9]MW0LGE validated
@@ -11242,8 +11245,7 @@ namespace Thetis
                 
                 if (HardwareSpecific.Model == HPSDRModel.HERMESLITE)       // MI0BOT: HL2 LNA has wider range
                 {
-                    udRX2StepAttData.Maximum = (decimal)32;
-                    udRX2StepAttData.Minimum = (decimal)-28;
+                    SafeSetBounds(udRX2StepAttData, (decimal)-28, 32, udRX2StepAttData.DecimalPlaces, udRX2StepAttData.Increment);
                 }
                 else if (alexpresent &&
                     HardwareSpecific.Model != HPSDRModel.ANAN10 &&
@@ -11256,8 +11258,13 @@ namespace Thetis
                     HardwareSpecific.Model != HPSDRModel.ANAN_G2_1K &&
                     HardwareSpecific.Model != HPSDRModel.ANVELINAPRO3 &&
                     HardwareSpecific.Model != HPSDRModel.REDPITAYA) //DH1KLM
-                    udRX2StepAttData.Maximum = (decimal)61; //MW0LGE_[2.9.0.7]  changed to udRX2
-                else udRX2StepAttData.Maximum = (decimal)31;
+                {
+                    SafeSetBounds(udRX2StepAttData, 0, 61, udRX2StepAttData.DecimalPlaces, udRX2StepAttData.Increment); //MW0LGE_[2.9.0.7]  changed to udRX2
+                }
+                else
+                {
+                    SafeSetBounds(udRX2StepAttData, 0, 31, udRX2StepAttData.DecimalPlaces, udRX2StepAttData.Increment);
+                }
                 _from_attenuatordata[1] = false;
 
                 rx2_attenuator_data = validateRX2StepAttData(rx2_attenuator_data); //[2.10.3.9]MW0LGE validated
@@ -14981,8 +14988,69 @@ namespace Thetis
 
             cmaster.CMSetTXOutputLevelRun();
 
+            // Configure main-form step attenuator limits dynamically and safely
+            if (HardwareSpecific.Model == HPSDRModel.HERMESLITE)
+            {
+                SafeSetBounds(udRX1StepAttData, (decimal)-28, 31, 0, 1);
+                SafeSetBounds(udRX2StepAttData, (decimal)-28, 31, 0, 1);
+                SafeSetBounds(udTXStepAttData, (decimal)-28, 31, 0, 1);
+            }
+            else
+            {
+                int rx1Max = 31;
+                if (alexpresent &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN10 &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN10E &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN7000D &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN8000D &&
+                    HardwareSpecific.Model != HPSDRModel.ORIONMKII &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN_G1 &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN_G2 &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN_G2_1K &&
+                    HardwareSpecific.Model != HPSDRModel.ANVELINAPRO3 &&
+                    HardwareSpecific.Model != HPSDRModel.REDPITAYA)
+                {
+                    rx1Max = 61;
+                }
+
+                int rx2Max = 31;
+                if (alexpresent &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN10 &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN10E &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN7000D &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN8000D &&
+                    HardwareSpecific.Model != HPSDRModel.ORIONMKII &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN_G1 &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN_G2 &&
+                    HardwareSpecific.Model != HPSDRModel.ANAN_G2_1K &&
+                    HardwareSpecific.Model != HPSDRModel.ANVELINAPRO3 &&
+                    HardwareSpecific.Model != HPSDRModel.REDPITAYA)
+                {
+                    rx2Max = 61;
+                }
+
+                SafeSetBounds(udRX1StepAttData, 0, rx1Max, 0, 1);
+                SafeSetBounds(udRX2StepAttData, 0, rx2Max, 0, 1);
+                SafeSetBounds(udTXStepAttData, 0, 31, 0, 1);
+            }
+
             //do always, to update everything
             CurrentModelChangedHandlers?.Invoke(HardwareSpecific.OldModel, HardwareSpecific.Model); //MW0LGE_[2.9.0.7]
+        }
+
+        private void SafeSetBounds(System.Windows.Forms.NumericUpDown ud, decimal min, decimal max, int decimalPlaces = 0, decimal increment = 1)
+        {
+            if (ud == null) return;
+            decimal val = ud.Value;
+            if (val < min) val = min;
+            if (val > max) val = max;
+            if (min < ud.Minimum) ud.Minimum = min;
+            if (max > ud.Maximum) ud.Maximum = max;
+            ud.Value = val;
+            ud.Minimum = min;
+            ud.Maximum = max;
+            ud.DecimalPlaces = decimalPlaces;
+            ud.Increment = increment;
         }
 
         private double saved_vfoa_freq = 7.1;

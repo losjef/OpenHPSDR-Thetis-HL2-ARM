@@ -1,4 +1,4 @@
-﻿/*  MeterManager.cs
+/*  MeterManager.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -1575,7 +1575,8 @@ namespace Thetis
                 try
                 {
                     //1 for version 1
-                    string tmp = Common.SerializeToBase64<ConcurrentDictionary<string, object>>(_settings); // 1| signifies version 1 of the serialize for future proofing
+                    var serializableDict = new Dictionary<string, object>(_settings);
+                    string tmp = Common.SerializeToBase64<Dictionary<string, object>>(serializableDict); // 1| signifies version 1 of the serialize for future proofing
                     tmp = tmp.Replace("/", "[backslash]");                    
                     return "1|" + tmp;
                 }
@@ -1637,7 +1638,15 @@ namespace Thetis
                     if (parts[0] == "1") // 1 signifies version 1 of the serialize for future proofing
                     {
                         string tmp = parts[1].Replace("[backslash]", "/");
-                        _settings = Common.DeserializeFromBase64<ConcurrentDictionary<string, object>>(tmp);
+                        try
+                        {
+                            var deserializedDict = Common.DeserializeFromBase64<Dictionary<string, object>>(tmp);
+                            _settings = new ConcurrentDictionary<string, object>(deserializedDict);
+                        }
+                        catch
+                        {
+                            _settings = Common.DeserializeFromBase64<ConcurrentDictionary<string, object>>(tmp);
+                        }
                     }
 
                     return true;
@@ -1646,12 +1655,6 @@ namespace Thetis
                 {
                     return false;
                 }
-
-                //bool ok = true;
-
-                //string[] settings = str.Split('|');
-                //if (settings.Length < 3 && settings.Length % 3 != 0) ok = false;
-
                 //if(ok)
                 //{
                 //    for (int i = 0; i < settings.Length; i += 3) 
@@ -41376,6 +41379,7 @@ namespace Thetis
             private string _custom_terminator_out;
             private string _custom_terminator_parsed_in;
             private string _custom_terminator_parsed_out;
+            [NonSerialized]
             private IPEndPoint _udp_endpoint;
 
             //
@@ -41401,6 +41405,7 @@ namespace Thetis
                 // This runs after Deserialize. We need to init the outbound queue as it is now not serialised/deserialised.
                 // Deserialising bypasses the constructor
                 _outbound_queue = new ConcurrentQueue<string>();
+                refreshUdpEndpoint();
             }
             private void init()
             {
@@ -42951,7 +42956,8 @@ namespace Thetis
         public static string GetSaveData()
         {
             //1 for version 1
-            string tmp = Common.SerializeToBase64<ConcurrentDictionary<Guid, clsMMIO>>(_mmio_data);
+            var serializableDict = new Dictionary<Guid, clsMMIO>(_mmio_data);
+            string tmp = Common.SerializeToBase64<Dictionary<Guid, clsMMIO>>(serializableDict);
             tmp = tmp.Replace("/", "[backslash]");
             return "1|" + tmp;
 
@@ -43016,7 +43022,15 @@ namespace Thetis
                 if (parts[0] == "1") // 1 signifies version 1 of the serialize for future proofing
                 {
                     string tmp = parts[1].Replace("[backslash]", "/");
-                    _mmio_data = Common.DeserializeFromBase64<ConcurrentDictionary<Guid, clsMMIO>>(tmp);
+                    try
+                    {
+                        var deserializedDict = Common.DeserializeFromBase64<Dictionary<Guid, clsMMIO>>(tmp);
+                        _mmio_data = new ConcurrentDictionary<Guid, clsMMIO>(deserializedDict);
+                    }
+                    catch
+                    {
+                        _mmio_data = Common.DeserializeFromBase64<ConcurrentDictionary<Guid, clsMMIO>>(tmp);
+                    }
                 }
 
                 foreach(KeyValuePair<Guid, clsMMIO> kvp in _mmio_data)
