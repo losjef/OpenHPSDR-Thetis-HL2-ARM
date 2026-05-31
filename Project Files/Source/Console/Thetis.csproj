@@ -21,6 +21,10 @@
     <NativeLibPlatform Condition="'$(Platform)' == 'x86' Or '$(PlatformTarget)' == 'x86' Or '$(Platform)' == 'Win32'">x86</NativeLibPlatform>
     <NativeLibPlatform Condition="'$(Platform)' == 'ARM64' Or '$(PlatformTarget)' == 'ARM64'">arm64</NativeLibPlatform>
     <NativeLibPlatform Condition="'$(NativeLibPlatform)' == ''">arm64</NativeLibPlatform>
+
+    <!-- Use Configuration from C# build, but fall back to Release for native C++ binaries if Debug binaries do not exist -->
+    <NativeDLLsConfig>$(Configuration)</NativeDLLsConfig>
+    <NativeDLLsConfig Condition="'$(Configuration)' == 'Debug' And !Exists('$(ProjectDir)..\..\bin\$(NativeLibPlatform)\Debug\ChannelMaster.dll')">Release</NativeDLLsConfig>
   </PropertyGroup>
 
   <ItemGroup>
@@ -77,9 +81,11 @@
   <ItemGroup>
     <None Update="CAT\CATStructs.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>CATStructs.xml</Link>
     </None>
     <None Update="CAT\CATCommands.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>CATCommands.xml</Link>
     </None>
   </ItemGroup>
 
@@ -90,18 +96,28 @@
 
   <!-- Post-build Event: Automatically copy the correct native libraries (ARM64, x64, or x86) to the output directory -->
   <Target Name="CopyNativeDLLs" AfterTargets="PostBuildEvent">
+    <Message Importance="high" Text="--- CopyNativeDLLs Debug ---" />
+    <Message Importance="high" Text="NativeLibPlatform: '$(NativeLibPlatform)'" />
+    <Message Importance="high" Text="Configuration: '$(Configuration)'" />
+    <Message Importance="high" Text="NativeDLLsConfig: '$(NativeDLLsConfig)'" />
+    <Message Importance="high" Text="ProjectDir: '$(ProjectDir)'" />
+    <Message Importance="high" Text="OutDir: '$(OutDir)'" />
     <ItemGroup>
       <NativeDLLs Include="$(ProjectDir)..\..\lib\fftw_$(NativeLibPlatform)\*.dll" />
       <NativeDLLs Include="$(ProjectDir)..\..\lib\NR_Algorithms_$(NativeLibPlatform)\*.dll" />
       <NativeDLLs Include="$(ProjectDir)..\..\lib\NR_Algorithms_$(NativeLibPlatform)\*.bin" />
       <NativeResources Include="$(ProjectDir)..\..\lib\Thetis-resources\**\*.*" />
+      <NativeDLLs Include="$(ProjectDir)..\..\bin\$(NativeLibPlatform)\$(NativeDLLsConfig)\*.dll" />
     </ItemGroup>
+    <Message Importance="high" Text="NativeDLLs to copy: @(NativeDLLs)" />
     <Copy SourceFiles="@(NativeDLLs)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(NativeResources)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <!-- Silently extract and copy Skins folder if missing or empty in output directory -->
+    <Exec Command="powershell -Command &quot;if (-not (Test-Path (Join-Path '$(OutDir)' 'Skins')) -or (Get-ChildItem (Join-Path '$(OutDir)' 'Skins') -ErrorAction SilentlyContinue | Measure-Object).Count -eq 0) { Start-Process -FilePath '$(ProjectDir)..\..\..\Skins\OpenHPSDR_Skins.exe' -ArgumentList '/s' -NoNewWindow -Wait; Copy-Item -Path \&quot;$env:APPDATA\OpenHPSDR\Skins\&quot; -Destination (Join-Path '$(OutDir)' 'Skins') -Recurse -Force -ErrorAction SilentlyContinue }&quot;" />
   </Target>
 
   <!-- Sync planning artifacts from Antigravity AppData brain folder to repository Documents/ folder -->
   <Target Name="SyncBrainArtifacts" AfterTargets="Build">
-    <Exec Command="powershell -ExecutionPolicy Bypass -Command &quot;&amp; { $appDataBrain = \&quot;$env:USERPROFILE\.gemini\antigravity\brain\&quot;; if (Test-Path $appDataBrain) { $latest = Get-ChildItem -Path $appDataBrain -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($latest) { Copy-Item -Path $latest.FullName\task.md -Destination '$(ProjectDir)..\..\..\Documents\task.md' -Force -ErrorAction SilentlyContinue; Copy-Item -Path $latest.FullName\implementation_plan.md -Destination '$(ProjectDir)..\..\..\Documents\implementation_plan.md' -Force -ErrorAction SilentlyContinue; } } }&quot;" IgnoreExitCode="true" />
+    <Exec Command="powershell -ExecutionPolicy Bypass -Command &quot;&amp; { $appDataBrain = \&quot;$env:USERPROFILE\.gemini\antigravity\brain\&quot;; if (Test-Path $appDataBrain) { $latest = Get-ChildItem -Path $appDataBrain -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($latest) { Copy-Item -Path (Join-Path $latest.FullName 'task.md') -Destination '$(ProjectDir)..\..\..\Documents\task.md' -Force -ErrorAction SilentlyContinue; Copy-Item -Path (Join-Path $latest.FullName 'implementation_plan.md') -Destination '$(ProjectDir)..\..\..\Documents\implementation_plan.md' -Force -ErrorAction SilentlyContinue; } } }&quot;" IgnoreExitCode="true" />
   </Target>
 </Project>

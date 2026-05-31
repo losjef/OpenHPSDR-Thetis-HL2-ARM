@@ -16,6 +16,10 @@
     <NativeLibPlatform Condition="'$(Platform)' == 'x86' Or '$(PlatformTarget)' == 'x86' Or '$(Platform)' == 'Win32'">x86</NativeLibPlatform>
     <NativeLibPlatform Condition="'$(Platform)' == 'ARM64' Or '$(PlatformTarget)' == 'ARM64'">arm64</NativeLibPlatform>
     <NativeLibPlatform Condition="'$(NativeLibPlatform)' == ''">arm64</NativeLibPlatform>
+
+    <!-- Use Configuration from C# build, but fall back to Release for native C++ binaries if Debug binaries do not exist -->
+    <NativeDLLsConfig>$(Configuration)</NativeDLLsConfig>
+    <NativeDLLsConfig Condition="'$(Configuration)' == 'Debug' And !Exists('$(ProjectDir)..\..\bin\$(NativeLibPlatform)\Debug\ChannelMaster.dll')">Release</NativeDLLsConfig>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,7 +42,7 @@
       <NativeDLLs Include="$(ProjectDir)..\..\lib\NR_Algorithms_$(NativeLibPlatform)\*.dll" />
       <NativeDLLs Include="$(ProjectDir)..\..\lib\NR_Algorithms_$(NativeLibPlatform)\*.bin" />
       <!-- Native built binaries from bin/ -->
-      <NativeBuilt Include="$(ProjectDir)..\..\bin\$(NativeLibPlatform)\$(Configuration)\*.dll" />
+      <NativeBuilt Include="$(ProjectDir)..\..\bin\$(NativeLibPlatform)\$(NativeDLLsConfig)\*.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(NativeDLLs)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(NativeBuilt)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />

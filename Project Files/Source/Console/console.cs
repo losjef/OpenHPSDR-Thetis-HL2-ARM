@@ -27810,6 +27810,22 @@ namespace Thetis
                 }
             }
         }
+        private void SafeAbort(Thread t)
+        {
+            if (t == null) return;
+            try
+            {
+                t.Abort();
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // Thread.Abort is not supported on .NET 8
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("SafeAbort: " + ex.Message);
+            }
+        }
         private bool DataFlowing = false;
         private byte[] id_bytes = new byte[1];
         private void chkPower_CheckedChanged(object sender, System.EventArgs e)
@@ -28161,87 +28177,87 @@ namespace Thetis
                 if (multimeter_thread != null)
                 {
                     if (!multimeter_thread.Join(/*500*/Math.Max(meter_delay, meter_dig_delay) + 50)) //MW0LGE change to meter delay
-                        multimeter_thread.Abort();
+                        SafeAbort(multimeter_thread);
                 }
                 if (rx2_meter_thread != null)
                 {
                     if (!rx2_meter_thread.Join(/*500*/Math.Max(meter_delay, meter_dig_delay) + 50)) //MW0LGE change to meter delay
-                        rx2_meter_thread.Abort();
+                        SafeAbort(rx2_meter_thread);
                 }
                 if (HardwareSpecific.Model == HPSDRModel.HERMESLITE)
                 {
                     if (IOBoard_update_thread != null)  // MI0BOT: Tidy up the IO board thread
                     {
                         if (!IOBoard_update_thread.Join(500))
-                            IOBoard_update_thread.Abort();
+                            SafeAbort(IOBoard_update_thread);
                     }
                 }
                 //MW0LGE_[2.9.0.7]
                 if (multimeter2_thread_rx1 != null)
                 {
                     if (!multimeter2_thread_rx1.Join(MeterManager.QuickestUpdateInterval(1, MOX)))
-                        multimeter2_thread_rx1.Abort();
+                        SafeAbort(multimeter2_thread_rx1);
                 }
                 if (multimeter2_thread_rx2 != null)
                 {
                     if (!multimeter2_thread_rx2.Join(MeterManager.QuickestUpdateInterval(2, MOX)))
-                        multimeter2_thread_rx2.Abort();
+                        SafeAbort(multimeter2_thread_rx2);
                 }
                 //
                 if (rx2_sql_update_thread != null)
                 {
                     if (!rx2_sql_update_thread.Join(500))
-                        rx2_sql_update_thread.Abort();
+                        SafeAbort(rx2_sql_update_thread);
                 }
                 if (rx2_sql_update_thread != null)
                 {
                     if (!rx2_sql_update_thread.Join(500))
-                        rx2_sql_update_thread.Abort();
+                        SafeAbort(rx2_sql_update_thread);
                 }
                 if (sql_update_thread != null)
                 {
                     if (!sql_update_thread.Join(500))
-                        sql_update_thread.Abort();
+                        SafeAbort(sql_update_thread);
                 }
                 if (noise_gate_update_thread != null)
                 {
                     if (!noise_gate_update_thread.Join(500))
-                        noise_gate_update_thread.Abort();
+                        SafeAbort(noise_gate_update_thread);
                 }
                 if (vox_update_thread != null)
                 {
                     if (!vox_update_thread.Join(500))
-                        vox_update_thread.Abort();
+                        SafeAbort(vox_update_thread);
                 }
                 if (poll_ptt_thread != null)
                 {
                     if (!poll_ptt_thread.Join(500))
-                        poll_ptt_thread.Abort();
+                        SafeAbort(poll_ptt_thread);
                 }
                 if (poll_cw_thread != null)
                 {
                     if (!poll_cw_thread.Join(500))
-                        poll_cw_thread.Abort();
+                        SafeAbort(poll_cw_thread);
                 }
                 if (poll_pa_pwr_thread != null)
                 {
                     if (!poll_pa_pwr_thread.Join(500))
-                        poll_pa_pwr_thread.Abort();
+                        SafeAbort(poll_pa_pwr_thread);
                 }
                 if (_overload_thread != null)
                 {
                     if (!_overload_thread.Join(500))
-                        _overload_thread.Abort();
+                        SafeAbort(_overload_thread);
                 }
                 if (poll_tx_inhibit_thead != null)
                 {
                     if (!poll_tx_inhibit_thead.Join(500))
-                        poll_tx_inhibit_thead.Abort();
+                        SafeAbort(poll_tx_inhibit_thead);
                 }
                 if (display_volts_amps_thead != null)
                 {
                     if (!display_volts_amps_thead.Join(650)) // there is a sleep 600 in there MW0LGE
-                        display_volts_amps_thead.Abort();
+                        SafeAbort(display_volts_amps_thead);
                 }
                 if (ATUTunetokenSource != null &&
                     ATUTunetokenSource.IsCancellationRequested == false)

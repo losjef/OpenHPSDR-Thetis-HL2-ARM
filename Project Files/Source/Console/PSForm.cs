@@ -1,4 +1,4 @@
-﻿/*  PSForm.cs
+/*  PSForm.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -439,7 +439,11 @@ namespace Thetis
                 {
                     if (!ampvThread.Join(1000))
                     {
-                        ampvThread.Abort();
+                        try
+                        {
+                            ampvThread.Abort();
+                        }
+                        catch (PlatformNotSupportedException) { }
                     }
                 }
 

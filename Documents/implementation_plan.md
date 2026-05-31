@@ -1,57 +1,46 @@
-# Implementation Plan: Windows ARM64 Port - Phase 4: Unit Testing & Verification
+# Implementation Plan: Fix Hermes Lite Model Selection Hang and Thread.Abort Exceptions
 
-This plan addresses Phase 4: Unit Testing & Verification. We will create a unit test project to verify both C++ math DLL functions (`wdsp.dll`, `ChannelMaster.dll`) and C# database/startup logic.
-
----
-
-## User Review Required
-
-> [!NOTE]
-> **Cross-Architecture Verification Strategy**
-> - The host build machine is an `AMD64` (x64) Windows machine, meaning native `ARM64` binaries cannot be executed directly on it.
-> - To verify the math logic and code compatibility, we will design the unit tests to support both `x64` and `ARM64` configurations.
-> - We will run the tests locally targeting `x64` to verify that the logic is correct.
-> - The same test suite will be ready to execute on native `ARM64` hardware or a WoA environment.
-
----
+This plan addresses the application hang/crash when selecting "Hermes Lite" from the hardware setup model dropdown. It also handles unsafe `Thread.Abort()` calls under .NET 8.
 
 ## Proposed Changes
 
-### Component 1: Unit Test Project Creation
+### Component 1: Internals Visibility
+#### [MODIFY] [AssemblyInfo.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/AssemblyInfo.cs)
+- Add `[assembly: InternalsVisibleTo("Thetis.Tests")]` to allow unit testing of internal classes like `cmaster` and `HardwareSpecific`.
 
-#### [NEW] [Thetis.Tests.csproj](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis.Tests/Thetis.Tests.csproj)
-Create a new C# MSTest unit test project targeting `net8.0-windows7.0` (matching the main projects).
-- Add project references to:
-  - `Thetis.csproj`
-  - `Midi2Cat.csproj`
-- Add build targets to copy native DLLs (`wdsp.dll`, `ChannelMaster.dll`, `fftw3` DLLs, etc.) from `Project Files/lib/` and the native project output paths to the test runner directory so P/Invokes work seamlessly at test time.
+### Component 2: Tune Power and Attenuator Range Constraints
+#### [MODIFY] [setup.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/setup.cs)
+- In `comboRadioModel_SelectedIndexChanged`, ensure that:
+  - If selecting `HERMESLITE`, the limits of `udTXTunePower` are safely set to `[-16.5, 0]` (setting `Maximum = 0` first, then `Minimum = -16.5` to prevent out-of-range exceptions).
+  - If selecting any other model, reset `udTXTunePower` limits back to `[0, 100]` (setting `Maximum = 100` first, then `Minimum = 0`). Also reset `udATTOnTX.Minimum` back to `0`.
+- In `FixedTunePower` property setter, clamp the assigned value to the control's current `Minimum` and `Maximum` bounds before assigning it to `udTXTunePower.Value`. This guarantees `ArgumentOutOfRangeException` will never be thrown by the WinForms control.
 
-#### [MODIFY] [Thetis_VS2026.sln](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis_VS2026.sln)
-Integrate the new `Thetis.Tests` project into the solution configurations for all platforms (`x64` and `ARM64`) and configurations (`Debug` and `Release`).
+### Component 3: Thread.Abort() Safety under .NET 8
+#### [MODIFY] [console.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/console.cs)
+- Wrap all occurrences of `Thread.Abort()` in try-catch blocks to catch and ignore `PlatformNotSupportedException` (which is always thrown under .NET 8). This prevents crash/hang issues during thread shutdowns when a thread takes longer than 500ms to join.
+#### [MODIFY] [PSForm.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/PSForm.cs)
+- Wrap `ampvThread.Abort()` in a try-catch block for `PlatformNotSupportedException`.
+#### [MODIFY] [TCPIPcatServer.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/CAT/TCPIPcatServer.cs)
+- Wrap thread abort calls in try-catch blocks.
+#### [MODIFY] [TCIServer.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/TCIServer.cs)
+- Wrap thread abort calls in try-catch blocks.
 
----
-
-### Component 2: Unit Test Implementations
-
-#### [NEW] [WdspTests.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis.Tests/WdspTests.cs)
-Create tests for native `wdsp.dll` and `ChannelMaster.dll` via P/Invoke.
-- Test `GetWDSPVersion()` to ensure the DLL loads and returns the expected version (`129`).
-- Test `GetCMVersion()` to ensure `ChannelMaster.dll` loads and returns the version correctly.
-- Test basic DSP/filter function invocation if feasible.
-
-#### [NEW] [DatabaseTests.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis.Tests/DatabaseTests.cs)
-Create database serialization tests:
-- Initialize the database class `Thetis.DB`.
-- Test XML load/save behavior to verify settings storage is fully functional on .NET 8.
+### Component 4: Verification Suite
+#### [MODIFY] [WdspTests.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis.Tests/WdspTests.cs)
+- Add a test verifying `cmaster.CMLoadRouterAll` can be called safely for `HPSDRModel.HERMESLITE` and other models.
+- Add a test simulating model changes and checking that no exception is thrown when assigning `FixedTunePower` values outside the Hermes Lite limits.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Build the entire solution targeting `Release` and `x64`.
-- Execute tests via:
+- Build and run unit tests targeting native ARM64:
   ```powershell
-  dotnet test "Project Files/Source/Thetis.Tests/Thetis.Tests.csproj" -c Release -r win-x64 --no-build
+  dotnet test "Project Files/Source/Thetis.Tests/Thetis.Tests.csproj" -c Debug -r win-arm64
   ```
-  Verify all tests pass on the host machine.
+
+### Manual Verification
+- Launch the application and select "Hermes Lite" from `Setup -> H/W Select -> Radio Model`.
+- Confirm that the dropdown updates instantly without freezing, hanging, or throwing unhandled exceptions.
+- Select another model (e.g. "Hermes") and verify the tune power limits return to normal (`[0, 100]`).

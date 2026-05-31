@@ -47,6 +47,8 @@ This document tracks all tasks, milestones, and progress for the porting effort.
 - [x] Compile C# projects (Thetis, Midi2Cat, RawInput) for ARM64
 - [x] Investigate and resolve runtime DLL loading (P/Invoke) issues
   - [x] Audit P/Invoke signatures in [portaudio.cs](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/portaudio.cs) and other source files to ensure compatibility with native 64-bit ARM DLLs under .NET 8
+  - [x] Fix VS Code Debug run failures by implementing a smart fallback to copy Release DLLs if Debug native DLLs are not built
+
 
 ## Phase 4: Unit Testing & Verification
 - [x] Write Unit/Integration Tests
@@ -58,5 +60,22 @@ This document tracks all tasks, milestones, and progress for the porting effort.
   - [ ] Test spectral display rendering (manual)
 
 ## Phase 5: Packaging & Installer Updates
-- [ ] Upgrade [Thetis-Installer.wixproj](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis-Installer/Thetis-Installer.wixproj) to build an ARM64 package
+- [x] Upgrade [Thetis-Installer.wixproj](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis-Installer/Thetis-Installer.wixproj) to build an ARM64 package
 - [ ] Package and verify the final installer on Windows ARM64
+
+## Phase 6: Run-time Asset Handling (Skins)
+- [x] Set up automated skins extraction and copying in [Thetis.csproj](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Console/Thetis.csproj)
+- [x] Verify that skins are extracted to AppData and copied to output directory during build
+- [x] Verify the application launches without the missing skins warning
+
+## Phase 7: Hermes Lite Model Selection Hang & .NET 8 Thread Safety
+- [x] Add InternalsVisibleTo to AssemblyInfo.cs
+- [x] Implement safe NumericUpDown range limits in setup.cs (SelectedIndexChanged)
+- [x] Implement safe, exception-free value assignment in FixedTunePower setter
+- [x] Wrap Thread.Abort() calls in try-catch blocks to handle PlatformNotSupportedException under .NET 8
+- [x] Add unit/integration tests to verify model selection safety and CM router loading
+- [x] Build solution and run test suite to verify success
+
+
+
+

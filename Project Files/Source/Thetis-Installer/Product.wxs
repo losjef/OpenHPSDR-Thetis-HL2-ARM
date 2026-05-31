@@ -5,15 +5,23 @@
 <!-- <?define NetFx481MinRelease = 533320 ?> -->
 <?define DocumentationPath = "..\..\lib\Thetis-resources\" ?>
 <?define SourcePath = "..\..\Source\" ?>
-<!-- 32-bit / 64-bit variables -->
-<?if $(var.Platform) = x64 ?>
+<!-- 32-bit / 64-bit / ARM64 variables -->
+<?if $(var.Platform) = ARM64 ?>
+<?define Win64 = "yes" ?>
+<?define UpgradeCode = "1FB8D39E-FC39-4D30-BD10-F8DFD2F6C2D4"?>
+<?define ProductName = "Thetis HL2 (ARM64)" ?>
+<?define ThetisName = "Thetis"?>
+<?define VC145 = "Microsoft_VC145_CRT_arm64.msm" ?>
+<?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?define FilesPath = "..\Console\bin\$(var.Configuration)\net8.0-windows7.0\win-arm64\" ?>
+<?elif $(var.Platform) = x64 ?>
 <?define Win64 = "yes" ?>
 <?define UpgradeCode = "1FB8D39E-FC39-4D30-BD10-F8DFD2F6C2D4"?>
 <?define ProductName = "Thetis HL2" ?>
 <?define ThetisName = "Thetis"?>
 <?define VC145 = "Microsoft_VC145_CRT_x64.msm" ?>
 <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
-<?define FilesPath = "..\..\Bin\$(var.Platform)\$(var.Configuration)\" ?>
+<?define FilesPath = "..\Console\bin\$(var.Configuration)\net8.0-windows7.0\win-x64\" ?>
 <?else ?>
 <?define Win64 = "no" ?>
 <?define UpgradeCode = "B888F619-2F38-4853-BE77-65DF1A224538"?>
@@ -21,8 +29,9 @@
 <?define ThetisName = "Thetis"?>
 <?define VC145 = "Microsoft_VC145_CRT_x86.msm" ?>
 <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
-<?define FilesPath = "..\..\Bin\$(var.Platform)\$(var.Configuration)\" ?>
+<?define FilesPath = "..\Console\bin\$(var.Configuration)\net8.0-windows7.0\win-x86\" ?>
 <?endif ?>
+
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
       xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">
@@ -97,7 +106,7 @@
       <![CDATA[Installed OR (VersionNT >= 601)]]>
     </Condition>
 
-    <?if $(var.Platform) = x64 ?>
+    <?if $(var.Platform) = x64 or $(var.Platform) = ARM64 ?>
     <Condition Message="!(loc.x86VersionRequired)">
       <![CDATA[VersionNT64]]>
     </Condition>
@@ -287,12 +296,21 @@
               KeyPath="yes"
               />
       </Component>
+		<?if $(var.Platform) = ARM64 ?>
+		<Component Guid="*">
+			<File Id="LibFFTWF33DLL"
+				  Source="$(var.FilesPath)fftw3f.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<?else ?>
 		<Component Guid="*">
 			<File Id="LibFFTWF33DLL"
 				  Source="$(var.FilesPath)libfftw3f-3.dll"
 				  KeyPath="yes"
               />
 		</Component>
+		<?endif ?>
 
 		<Component Guid="*">
 			<File Id="rnnoiseDLL"
@@ -302,6 +320,7 @@
               />
 		</Component>
 
+		<?if $(var.Platform) != ARM64 ?>
 		<Component Guid="*">
 			<File Id="rnnoise_avx2DLL"
 				  Source="$(var.FilesPath)rnnoise_avx2.dll"
@@ -309,6 +328,7 @@
 				  Checksum="yes"
               />
 		</Component>
+		<?endif ?>
 		
 		<Component Guid="*">
 			<File Id="specbleachDLL"

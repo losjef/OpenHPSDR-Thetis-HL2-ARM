@@ -5339,15 +5339,19 @@ namespace Thetis
             get { return (int)udTXTunePower.Value; }
             set 
             {
+                decimal targetVal;
                 if (HPSDRModel.HERMESLITE == HardwareSpecific.Model)
                 {
-                    udTXTunePower.Value = (decimal)(value/3 - 33)/2;    // MI0BOT: Now only has a -16.5 to 0 range in HL2 for Tune power
+                    targetVal = (decimal)(value/3 - 33)/2;    // MI0BOT: Now only has a -16.5 to 0 range in HL2 for Tune power
                 }
                 else
                 {
-                    udTXTunePower.Value = (decimal)value;
+                    targetVal = (decimal)value;
                 }
 
+                if (targetVal > udTXTunePower.Maximum) targetVal = udTXTunePower.Maximum;
+                if (targetVal < udTXTunePower.Minimum) targetVal = udTXTunePower.Minimum;
+                udTXTunePower.Value = targetVal;
             }
         }
         public int TwoTonePower
@@ -20135,6 +20139,16 @@ namespace Thetis
 
             HPSDRModel new_model = HardwareSpecific.StringModelToEnum(comboRadioModel.Text);
             HardwareSpecific.Model = new_model;
+
+            // Reset control bounds to defaults before applying model-specific restrictions to prevent ArgumentOutOfRangeException
+            udTXTunePower.Maximum = (decimal)100;
+            udTXTunePower.Minimum = (decimal)0;
+            udTXTunePower.DecimalPlaces = 0;
+            udTXTunePower.Increment = (decimal)1;
+
+            udATTOnTX.Minimum = (decimal)0;
+            udHermesStepAttenuatorData.Minimum = (decimal)0;
+            udHermesStepAttenuatorDataRX2.Minimum = (decimal)0;
 
             console.SetupForHPSDRModel();
 

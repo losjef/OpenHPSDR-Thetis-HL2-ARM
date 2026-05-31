@@ -1,4 +1,4 @@
-﻿//=================================================================
+//=================================================================
 // MW0LGE 2022
 //=================================================================
 
@@ -253,7 +253,11 @@ namespace Thetis
 
                 if (m_clientListenerThread.IsAlive)
                 {
-                    m_clientListenerThread.Abort();
+                    try
+                    {
+                        m_clientListenerThread.Abort();
+                    }
+                    catch (PlatformNotSupportedException) { }
                     m_disconnected = true;
                     ClientDisconnectedHandlers?.Invoke();
                 }
@@ -585,7 +589,13 @@ namespace Thetis
                 {
                     m_serverThread.Join(50); // dont need to wait long here, as we are blocking anyway
                     if (m_serverThread.IsAlive)
-                        m_serverThread.Abort();
+                    {
+                        try
+                        {
+                            m_serverThread.Abort();
+                        }
+                        catch (PlatformNotSupportedException) { }
+                    }
                     m_serverThread = null;
                 }
 
@@ -596,7 +606,13 @@ namespace Thetis
                         m_purgingThread.Join(500);
 
                     if (m_purgingThread.IsAlive)
-                        m_purgingThread.Abort();
+                    {
+                        try
+                        {
+                            m_purgingThread.Abort();
+                        }
+                        catch (PlatformNotSupportedException) { }
+                    }
                     m_purgingThread = null;
                 }
 
