@@ -1,3 +1,4 @@
 {
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "cmake.sourceDirectory": "C:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project Files/lib/portaudio-19.7.0"
 }

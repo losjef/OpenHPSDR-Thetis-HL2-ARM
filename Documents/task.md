@@ -55,8 +55,8 @@ This document tracks all tasks, milestones, and progress for the porting effort.
   - [x] Create a C# unit test project to verify basic console startup, database handling, and parameter settings under native ARM64 execution
 - [x] Verify full application execution
   - [x] Run runtime checks on target ARM64 device (unit tests executed natively on ARM64 host)
-  - [ ] Test audio capture/playback via PortAudio ARM64 (manual)
-  - [ ] Test spectral display rendering (manual)
+  - [x] Test audio capture/playback via PortAudio ARM64 (manual)
+  - [x] Test spectral display rendering (manual)
 
 ## Phase 5: Packaging & Installer Updates
 - [x] Upgrade [Thetis-Installer.wixproj](file:///c:/Users/jeffl/Source/repos/github/OpenHPSDR-Thetis-HL2-ARM/Project%20Files/Source/Thetis-Installer/Thetis-Installer.wixproj) to build an ARM64 package
